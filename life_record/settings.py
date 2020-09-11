@@ -85,8 +85,8 @@ DATABASES = {
         'HOST': '127.0.0.1',
         'PORT': 3306,
         'USER': 'yyy',
-        'PASSWORD': 'yyy.1234',
-        'NAME': 'life'
+        'PASSWORD': 'yyy.123',
+        'NAME': 'life_app'
     }
 }
 

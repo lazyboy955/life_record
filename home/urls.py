@@ -7,5 +7,6 @@ router = DefaultRouter()  # 可以处理视图的路由器
 router.register('weights', views.WeightViewSet)
 
 urlpatterns = [
-    path(r'', include(router.urls))
+    path(r'', include(router.urls)),
+    path(r'hello/', views.HelloWorld.as_view())
 ]

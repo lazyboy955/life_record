@@ -1,6 +1,14 @@
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.views import APIView
+from rest_framework.response import Response
 from .serializers import WeightSerializer
 from .models import Weight
+
+
+# test
+class HelloWorld(APIView):
+    def get(self, request):
+        return Response('test', status=400)
 
 
 class WeightViewSet(ModelViewSet):
