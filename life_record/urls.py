@@ -15,9 +15,16 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from rest_framework import routers
+
+# 设置一个默认根路由
+router = routers.DefaultRouter()
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    # 功能型模块
+    path('', include(router.urls)),
+    path('admin/', admin.site.urls),  # 管理员登录界面
+    path('api-auth/', include('rest_framework.urls')),  # 设置用户登入(这步必须先设置，swagger会调用）
     # 项目内模块
     path('home/', include('home.urls')),
 ]

@@ -11,6 +11,31 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
+import acm
+import json
+
+# 使用ACM做配置管理
+ENDPOINT = "acm.aliyun.com"
+NAMESPACE = "ad3407ed-74a3-4c77-8b58-42766da45679"
+AK = os.getenv('ACCESS_KEY')
+SK = os.getenv('SECRET_KEY')
+GROUP = "DEFAULT_GROUP"
+
+
+# 获取配置中心参数
+class ACM(acm.ACMClient):
+    def get_value(self, date_id: str, group: str, default=''):
+        value = self.get(date_id, group)
+        try:
+            value = json.loads(value)
+        finally:
+            return value if value else default
+
+
+acm_client = ACM(ENDPOINT, NAMESPACE, AK, SK)
+MYSQL_CONFIG = acm_client.get_value("MYSQL_CONFIG", GROUP)
+REDIS_PWD = acm_client.get_value("REDIS_PWD", GROUP)
+REDIS_HOST = acm_client.get_value("REDIS_HOST", GROUP)
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -82,27 +107,29 @@ WSGI_APPLICATION = 'life_record.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'HOST': '127.0.0.1',
-        'PORT': 3306,
-        'USER': 'yyy',
-        'PASSWORD': 'yyy.123',
-        'NAME': 'life_app'
+        'HOST': MYSQL_CONFIG['HOST'],
+        'PORT': MYSQL_CONFIG['PORT'],
+        'USER': MYSQL_CONFIG['USER'],
+        'PASSWORD': MYSQL_CONFIG['PASSWORD'],
+        'NAME': MYSQL_CONFIG['NAME'],
     }
 }
 
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379/0",
+        "LOCATION": f"redis://{REDIS_HOST}:6379/0",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "PASSWORD": REDIS_PWD
         }
     },
     "session": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379/1",
+        "LOCATION": f"redis://{REDIS_HOST}:6379/1",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "PASSWORD": REDIS_PWD
         }
     }
 }
