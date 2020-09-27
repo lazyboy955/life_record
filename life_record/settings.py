@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 import os
 import acm
 import json
+from datetime import timedelta
 
 # 使用ACM做配置管理
 ENDPOINT = "acm.aliyun.com"
@@ -65,6 +66,8 @@ INSTALLED_APPS = [
     # the third package
     'rest_framework',
     'django_filters',
+    'django_celery_results',
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
@@ -136,6 +139,29 @@ CACHES = {
         }
     }
 }
+
+# Celery Config
+CELERY_BROKER_URL = f"redis://:{REDIS_PWD}@{REDIS_HOST}:6379/2"
+CELERY_RESULT_BACKEND = 'django-db'
+CELERY_CACHE_BACKEND = 'default'
+CELERY_RESULT_SERIALIZER = 'json'  # 结果序列化方案
+CELERY_TASK_ROUTES = [(
+    ('home.tasks.*', {'queue': 'home',
+                      'routing_key': 'home'}),
+), ]
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+# CELERY_BEAT_SCHEDULE = {
+#     "task_test": {
+#         'task': 'home.tasks.add_test',
+#         'schedule': timedelta(minutes=1, seconds=10),
+#         'args': (1, 2),
+#     }
+# }
+CELERY_MESSAGE_COMPRESSION = 'zlib'  # 是否壓縮
+CELERY_MAX_TASKS_PER_CHILD = 3  # 每個worker最多執行3個任務就摧毀，避免記憶體洩漏
+CELERY_TIMEZONE = 'Asia/Shanghai'
+DJANGO_CELERY_BEAT_TZ_AWARE = False
+
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "session"
 

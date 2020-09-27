@@ -46,7 +46,7 @@ class WeightViewSet(ModelViewSet):
             logger.info('替换当日同时间记录记录如下：')
             logger.info(WeightSerializer(prev_obj).data)
         resp_data = response.data
-        # 增加平均体重数据（10天)
+        # 平均体重数据（10天)
         start_day = date.today() - timedelta(days=9)
         end_day = date.today() + timedelta(days=1)
         objs = Weight.objects.filter(create_time__range=(start_day, end_day),
