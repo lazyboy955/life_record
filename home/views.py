@@ -49,24 +49,24 @@ class WeightViewSet(ModelViewSet):
         prev_objs = self.queryset.filter(period_of_time=period_of_time,
                                          username=obj_data['username'],
                                          update_time__gte=date.today())
-        response = super(WeightViewSet, self).create(request, *args, **kwargs)
-        # todo 可能会存在有多个问题，正常情况应该只有一个，需要反馈一下告知用户修改的事,可以加个定时任务清除一下
+        # 存在惰性加载问题，需要先修改数据，再更新新数据。
         if prev_objs:
-            # todo 存在一个bug，有时候新创建也会进入到这里
             prev_obj = prev_objs.first()
             prev_obj.is_delete = True
             prev_obj.save()
             logger.info('替换当日同时间记录记录如下：')
             logger.info(WeightSerializer(prev_obj).data)
+        response = super(WeightViewSet, self).create(request, *args, **kwargs)
+        # todo 可能会存在有多个问题，正常情况应该只有一个，需要反馈一下告知用户修改的事,可以加个定时任务清除一下
         resp_data = response.data
         # 平均体重数据（10天)
         start_day = date.today() - timedelta(days=9)
         end_day = date.today() + timedelta(days=1)
-        objs = Weight.objects.filter(create_time__range=(start_day, end_day),
-                                     period_of_time=period_of_time,
-                                     username=obj_data['username'], )
+        objs = self.queryset.filter(create_time__range=(start_day, end_day),
+                                    period_of_time=period_of_time,
+                                    username=obj_data['username'], ).order_by('-create_time')
         resp_data['平均值(过去十天）'] = round(objs.aggregate(Avg('weight'))['weight__avg'], 2)
-        if len(objs) >= 2:
-            resp_data['上一次体重'] = objs[:-2].weight
+        if len(objs) > 1:
+            resp_data['上一次体重'] = objs[1].weight
         response.data = resp_data
         return response
