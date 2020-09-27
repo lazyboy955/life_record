@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     'django_filters',
     'django_celery_results',
     'django_celery_beat',
+    'drf_yasg',
 ]
 
 MIDDLEWARE = [
@@ -182,6 +183,32 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+SWAGGER_SETTINGS = {
+    'LOGIN_URL': '/admin/login',
+    'LOGOUT_URL': '/admin/logout',
+    'PERSIST_AUTH': True,
+    'REFETCH_SCHEMA_WITH_AUTH': True,
+    'REFETCH_SCHEMA_ON_LOGOUT': True,
+
+    'DEFAULT_INFO': 'DjangoDrfTest.urls.swagger_info',#这里注意，更改DjangoDrfTest
+
+    'SECURITY_DEFINITIONS': {
+        'Basic': {
+            'type': 'basic'
+        },
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'authorization',
+            'in': 'header'
+        },
+        'Query': {
+            'type': 'apiKey',
+            'name': 'auth',
+            'in': 'query'
+        }
+    }
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/

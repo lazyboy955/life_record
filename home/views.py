@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from home.serializers import WeightSerializer
 from home.models import Weight, get_default_period_of_time
 from datetime import date, timedelta
+from drf_yasg.utils import swagger_auto_schema
 import logging
 
 logger = logging.getLogger('home')
@@ -12,6 +13,8 @@ logger = logging.getLogger('home')
 
 # test
 class HelloWorld(APIView):
+    """测试接口"""
+
     @staticmethod
     def get(request):
         logger.info('TEST!')
@@ -19,12 +22,22 @@ class HelloWorld(APIView):
 
 
 class WeightViewSet(ModelViewSet):
+    """
+    create:新增体重信息
+    list: 展示体重记录
+    retrieve: 获取单条体重信息
+    update: 更新体重信息
+    destroy: 删除体重信息
+    """
     queryset = Weight.objects.filter(is_delete=False)
     serializer_class = WeightSerializer
     # filterset_class= WeightFilter
     filterset_fields = ['username', 'period_of_time']
     search_fields = ['username']
 
+    @swagger_auto_schema(responses={
+        201: '返回新增的体重信息，十天体重均值，昨天体重'
+    })
     def create(self, request, *args, **kwargs):
         obj_data = request.data
         logger.info(f'更新数据如下：{obj_data}')
