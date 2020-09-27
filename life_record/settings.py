@@ -24,7 +24,7 @@ GROUP = "DEFAULT_GROUP"
 
 # 获取配置中心参数
 class ACM(acm.ACMClient):
-    def get_value(self, date_id: str, group: str, default=''):
+    def get_value(self, date_id: str, group: str, default=None):
         value = self.get(date_id, group)
         try:
             value = json.loads(value)
@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'home',
     # the third package
     'rest_framework',
+    'django_filters',
 ]
 
 MIDDLEWARE = [
@@ -79,6 +80,8 @@ MIDDLEWARE = [
 REST_FRAMEWORK = {
     # 异常处理
     'EXCEPTION_HANDLER': 'utils.exceptions.exception_handler',
+    # 视图层面可以筛选
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
 }
 
 ROOT_URLCONF = 'life_record.urls'
@@ -165,7 +168,7 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+USE_TZ = False
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
@@ -203,10 +206,23 @@ LOGGING = {
             'backupCount': 10,
             'formatter': 'verbose'
         },
+        'home_log': {  # 向文件中输出日志
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(os.path.dirname(BASE_DIR), "life_record/logs/home.log"),  # 日志文件的位置
+            'maxBytes': 300 * 1024 * 1024,
+            'backupCount': 10,
+            'formatter': 'verbose'
+        },
     },
     'loggers': {  # 日志器
         'django': {  # 定义了一个名为django的日志器
             'handlers': ['console', 'file'],  # 可以同时向终端与文件中输出日志
+            'propagate': True,  # 是否继续传递日志信息
+            'level': 'INFO',  # 日志器接收的最低日志级别
+        },
+        'home': {
+            'handlers': ['home_log'],  # 可以同时向终端与文件中输出日志
             'propagate': True,  # 是否继续传递日志信息
             'level': 'INFO',  # 日志器接收的最低日志级别
         },

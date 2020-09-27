@@ -1,8 +1,9 @@
 from home.models import Weight
-from rest_framework import serializers
+# from rest_framework import serializers
+from life_record.serializers import TimeSerializerModel
 
 
-class WeightSerializer(serializers.ModelSerializer):
+class WeightSerializer(TimeSerializerModel):
     class Meta:
         model = Weight
-        fields = '__all__'
+        exclude = ['is_delete']
