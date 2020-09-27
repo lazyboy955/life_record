@@ -25,7 +25,7 @@ GROUP = "DEFAULT_GROUP"
 
 # 获取配置中心参数
 class ACM(acm.ACMClient):
-    def get_value(self, date_id: str, group: str, default=None):
+    def get_value(self, date_id: str, group: str, default=None) -> str or dict:
         value = self.get(date_id, group)
         try:
             value = json.loads(value)

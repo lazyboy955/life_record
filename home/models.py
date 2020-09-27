@@ -1,7 +1,7 @@
 from life_record.models import BaseModel
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-import time
+from datetime import datetime
 
 
 # 时间段字段
@@ -12,7 +12,7 @@ class PeriodField:
 
 
 def get_default_period_of_time():
-    return PeriodField.DAY if 7 <= int(time.strftime('%H')) <= 14 else PeriodField.NIGHT
+    return PeriodField.DAY if 7 <= datetime.today().hour <= 14 else PeriodField.NIGHT
 
 
 class User(AbstractUser):
