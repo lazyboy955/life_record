@@ -48,7 +48,7 @@ class WeightViewSet(ModelViewSet):
         period_of_time = obj_data['period_of_time']
         prev_objs = self.queryset.filter(period_of_time=period_of_time,
                                          username=obj_data['username'],
-                                         update_time__gte=date.today())
+                                         record_day__gte=date.today())
         # 存在惰性加载问题，需要先修改数据，再更新新数据。
         if prev_objs:
             prev_obj = prev_objs.first()
@@ -62,7 +62,7 @@ class WeightViewSet(ModelViewSet):
         # 平均体重数据（10天)
         start_day = date.today() - timedelta(days=9)
         end_day = date.today() + timedelta(days=1)
-        objs = self.queryset.filter(create_time__range=(start_day, end_day),
+        objs = self.queryset.filter(record_day__range=(start_day, end_day),
                                     period_of_time=period_of_time,
                                     username=obj_data['username'], ).order_by('-create_time')
         resp_data['平均值(过去十天）'] = round(objs.aggregate(Avg('weight'))['weight__avg'], 2)

@@ -46,4 +46,5 @@ urlpatterns = [
     path('api-auth/', include('rest_framework.urls')),  # 设置用户登入(这步必须先设置，swagger会调用）
     # 项目内模块
     path('home/', include('home.urls')),
+    path('project/', include('project.urls')),
 ]

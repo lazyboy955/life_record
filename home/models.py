@@ -1,7 +1,7 @@
 from life_record.models import BaseModel
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from datetime import datetime
+from datetime import datetime, date
 
 
 # 时间段字段
@@ -35,6 +35,7 @@ class Weight(BaseModel):
     period_of_time = models.PositiveSmallIntegerField(verbose_name='时间段',
                                                       choices=PeriodField.PERIOD_CHOICES,
                                                       default=get_default_period_of_time)
+    record_day = models.DateField(verbose_name='记录时间', default=date.today)
 
     class Meta:
         db_table = 'weight'
