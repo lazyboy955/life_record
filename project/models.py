@@ -11,9 +11,8 @@ class Priority:
 
 
 # Create your models here.
-# todo 建立需求模型 1.什么需求 2.什么类型 3. 优先级 4.是否完成，完成之后，禁止再修改记录
 class ProjectRequire(BaseModel):
-    username = models.CharField(verbose_name='用户名', max_length=200)
+    operator = models.CharField(verbose_name='执行者', max_length=200, blank=False, null=False)
     description = models.TextField(verbose_name='需求说明', blank=False, null=False)
     priority = models.PositiveSmallIntegerField(verbose_name='优先级',
                                                 choices=Priority.PRIORITY_CHOOSE,

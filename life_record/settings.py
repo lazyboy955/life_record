@@ -13,7 +13,23 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 import os
 import acm
 import json
+import time
 from datetime import timedelta
+from multiprocessing import set_start_method
+
+set_start_method("fork")
+
+
+# 获取配置中心参数
+class ACM(acm.ACMClient):
+    def get_value(self, data_id: str, default=None, group="DEFAULT_GROUP") -> str or dict:
+        # self.add_watcher(data_id, group, lambda x: print("config change detected: " + x))
+        value = self.get(data_id, group)
+        try:
+            value = json.loads(value)
+        finally:
+            return value if value else default
+
 
 # 使用ACM做配置管理
 ENDPOINT = "acm.aliyun.com"
@@ -21,23 +37,18 @@ NAMESPACE = "ad3407ed-74a3-4c77-8b58-42766da45679"
 AK = os.getenv('ACCESS_KEY')
 SK = os.getenv('SECRET_KEY')
 GROUP = "DEFAULT_GROUP"
-
-
-# 获取配置中心参数
-class ACM(acm.ACMClient):
-    def get_value(self, date_id: str, group: str, default=None) -> str or dict:
-        value = self.get(date_id, group)
-        try:
-            value = json.loads(value)
-        finally:
-            return value if value else default
-
-
 acm_client = ACM(ENDPOINT, NAMESPACE, AK, SK)
-MYSQL_CONFIG = acm_client.get_value("MYSQL_CONFIG", GROUP)
-REDIS_PWD = acm_client.get_value("REDIS_PWD", GROUP)
-REDIS_HOST = acm_client.get_value("REDIS_HOST", GROUP)
+# 增加配置监控
 
+"""配置中心参数"""
+# test
+TEST = acm_client.get_value("test")
+# 数据库
+MYSQL_CONFIG = acm_client.get_value("MYSQL_CONFIG")
+REDIS_PWD = acm_client.get_value("REDIS_PWD")
+REDIS_HOST = acm_client.get_value("REDIS_HOST")
+
+"""配置中心参数"""
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -142,28 +153,6 @@ CACHES = {
     }
 }
 
-# Celery Config
-CELERY_BROKER_URL = f"redis://:{REDIS_PWD}@{REDIS_HOST}:6379/2"
-CELERY_RESULT_BACKEND = 'django-db'
-CELERY_CACHE_BACKEND = 'default'
-CELERY_RESULT_SERIALIZER = 'json'  # 结果序列化方案
-CELERY_TASK_ROUTES = [(
-    ('home.tasks.*', {'queue': 'home',
-                      'routing_key': 'home'}),
-), ]
-CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
-# CELERY_BEAT_SCHEDULE = {
-#     "task_test": {
-#         'task': 'home.tasks.add_test',
-#         'schedule': timedelta(minutes=1, seconds=10),
-#         'args': (1, 2),
-#     }
-# }
-CELERY_MESSAGE_COMPRESSION = 'zlib'  # 是否壓縮
-CELERY_MAX_TASKS_PER_CHILD = 3  # 每個worker最多執行3個任務就摧毀，避免記憶體洩漏
-CELERY_TIMEZONE = 'Asia/Shanghai'
-DJANGO_CELERY_BEAT_TZ_AWARE = False
-
 SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 SESSION_CACHE_ALIAS = "session"
 
@@ -184,32 +173,6 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
-
-SWAGGER_SETTINGS = {
-    'LOGIN_URL': '/admin/login',
-    'LOGOUT_URL': '/admin/logout',
-    'PERSIST_AUTH': True,
-    'REFETCH_SCHEMA_WITH_AUTH': True,
-    'REFETCH_SCHEMA_ON_LOGOUT': True,
-
-    'DEFAULT_INFO': 'DjangoDrfTest.urls.swagger_info',#这里注意，更改DjangoDrfTest
-
-    'SECURITY_DEFINITIONS': {
-        'Basic': {
-            'type': 'basic'
-        },
-        'Bearer': {
-            'type': 'apiKey',
-            'name': 'authorization',
-            'in': 'header'
-        },
-        'Query': {
-            'type': 'apiKey',
-            'name': 'auth',
-            'in': 'query'
-        }
-    }
-}
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
@@ -296,5 +259,58 @@ LOGGING = {
     }
 }
 
-# use the User model I set
+# 默认用户模型
 AUTH_USER_MODEL = 'home.User'
+
+"""邮件相关"""
+# qq IMAP/SMTP 配置
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = "smtp.126.com"
+EMAIL_PORT = 25  # 或者 465/587是设置了 SSL 加密方式
+# 发送邮件的邮箱
+EMAIL_HOST_USER = acm_client.get_value('EMAIL_HOST')
+# 在邮箱中设置的客户端授权密码
+EMAIL_HOST_PASSWORD = acm_client.get_value('STMP_PWD')  # 如果重新设置了新的授权码,直接使用最新的授权码即可
+EMAIL_USE_TLS = True  # 这里必须是 True，否则发送不成功
+# 收件人看到的发件人, 必须是一直且有效的
+EMAIL_FROM = EMAIL_HOST_USER
+
+"""Celery Config"""
+CELERY_BROKER_URL = f"redis://:{REDIS_PWD}@{REDIS_HOST}:6379/2"
+CELERY_RESULT_BACKEND = 'django-db'
+CELERY_CACHE_BACKEND = 'default'
+CELERY_RESULT_SERIALIZER = 'json'  # 结果序列化方案
+CELERY_TASK_ROUTES = [(
+    ('home.tasks.*', {'queue': 'home',
+                      'routing_key': 'home'}),
+), ]
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+CELERY_MESSAGE_COMPRESSION = 'zlib'  # 是否壓縮
+CELERY_MAX_TASKS_PER_CHILD = 3  # 每個worker最多執行3個任務就摧毀，避免記憶體洩漏
+CELERY_TIMEZONE = 'Asia/Shanghai'
+DJANGO_CELERY_BEAT_TZ_AWARE = False
+
+"""Swagger"""
+SWAGGER_SETTINGS = {
+    'LOGIN_URL': '/admin/login',
+    'LOGOUT_URL': '/admin/logout',
+    'PERSIST_AUTH': True,
+    'REFETCH_SCHEMA_WITH_AUTH': True,
+    'REFETCH_SCHEMA_ON_LOGOUT': True,
+    'DEFAULT_INFO': 'DjangoDrfTest.urls.swagger_info',  # 这里注意，更改DjangoDrfTest
+    'SECURITY_DEFINITIONS': {
+        'Basic': {
+            'type': 'basic'
+        },
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'authorization',
+            'in': 'header'
+        },
+        'Query': {
+            'type': 'apiKey',
+            'name': 'auth',
+            'in': 'query'
+        }
+    }
+}

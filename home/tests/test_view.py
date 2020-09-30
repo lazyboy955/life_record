@@ -6,6 +6,5 @@ class WeightViewTest(TestCase):
         self.client = Client()
 
     def test_details(self):
-        """one day one period time one user one weight"""
         response = self.client.get('/home/weights/')
         self.assertEqual(response.status_code, 200)
