@@ -19,7 +19,7 @@ django-celery-results==1.2.1
 django-filter==2.3.0
 django-redis==4.12.1
 django-timezone-field==4.0
-djangorestframework==3.11.1
+djangorestframework==3.11.2
 drf-yasg==1.17.1
 flower==0.9.5
 humanize==2.6.0
