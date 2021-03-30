@@ -41,7 +41,7 @@ pickleshare==0.7.5
 prometheus-client==0.8.0
 prompt-toolkit==3.0.7
 ptyprocess==0.6.0
-Pygments==2.7.1
+Pygments==2.7.4
 PyMySQL==0.10.0
 pyparsing==2.4.7
 python-crontab==2.5.1
