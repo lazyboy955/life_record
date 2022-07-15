@@ -15,7 +15,7 @@ coreschema==0.0.4
 decorator==4.4.2
 Django==3.1.1
 django-celery-beat==2.0.0
-django-celery-results==1.2.1
+django-celery-results==2.4.0
 django-filter==2.3.0
 django-redis==4.12.1
 django-timezone-field==4.0
