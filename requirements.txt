@@ -21,7 +21,7 @@ django-redis==4.12.1
 django-timezone-field==4.0
 djangorestframework==3.11.1
 drf-yasg==1.17.1
-flower==0.9.5
+flower==1.2.0
 humanize==2.6.0
 idna==2.10
 inflection==0.5.1
